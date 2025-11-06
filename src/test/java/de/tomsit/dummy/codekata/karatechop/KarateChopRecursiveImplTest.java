@@ -21,7 +21,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 @ExtendWith(RandomBeansExtension.class)
 class KarateChopRecursiveImplTest {
 
-  private KarateChopRecursiveImpl karateChopRecursive = new KarateChopRecursiveImpl();
+  private final KarateChopRecursiveImpl karateChopRecursive = new KarateChopRecursiveImpl();
 
   @ParameterizedTest
   @ValueSource(ints = {0, 1, 2, 3, 4, 5})
@@ -78,7 +78,7 @@ class KarateChopRecursiveImplTest {
       1 3 3 7   | 1 2             | in the middle
       0 1 2 3 3 | 4 5             | right edge
       """, delimiter = '|')
-  void testChop_Found_InListWithDups(String listStr, String expectedIndexesStr, String comment) {
+  void testChop_Found_InListWithDups(String listStr, String expectedIndexesStr) {
 
     assertThat(karateChopRecursive.chop(3, toList(listStr)))
         .as("any index where the element is found is valid (arbitrarily choosing the first found occurrence)")
