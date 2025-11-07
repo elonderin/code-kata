@@ -1,23 +1,25 @@
 package de.tomsit.dummy.codekata.k05bloom;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.BitSet;
 import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.springframework.util.Assert;
 
 @Slf4j
 @RequiredArgsConstructor
 public class BloomFilter {
 
-  public static final Path FILE_PATH = Path.of("./data/kata04/wordlist.txt");
   public static final int INDEX_BYTES = 3;
   public static final Function<byte[], int[]> TO_INTS_CONVERTER = BloomFilter::toInts;
+
+  private MutableInt counter = new MutableInt();
+  private int hashCount = 4;
 
   private static int[] toInts(byte[] bytes) {
     Assert.isTrue(bytes.length >= INDEX_BYTES,
@@ -25,7 +27,7 @@ public class BloomFilter {
 
     var hashes = new int[bytes.length / INDEX_BYTES];
     if (hashes.length * INDEX_BYTES < bytes.length) {
-      log.warn("given byte[] size is not a multiple of {} ({}). Bytes at the end are ignored.", INDEX_BYTES, bytes.length);
+      log.debug("given byte[] size is not a multiple of {} ({}). Bytes at the end are ignored.", INDEX_BYTES, bytes.length);
     }
     for (int i = 0; i < hashes.length; i++) {
       for (int j = 0; j < INDEX_BYTES; j++) {
@@ -39,15 +41,35 @@ public class BloomFilter {
 
   private final String algorithm = "SHA-256";
 
-
   @SneakyThrows
-  public void readDictionary() {
+  public void insertItems(Stream<String> linesGiven) {
+    counter.setValue(0);
 
-    try (var lines = Files.lines(FILE_PATH)) {
-      lines.flatMapToInt(this::calcHashes)
-           .forEach(bits::set);
-    }
+    linesGiven
+        .flatMapToInt(this::calcHashes)
+        .peek(x -> counter.increment())
+        .forEach(bits::set);
 
+    linesGiven.close();
+
+  }
+
+  void logInfo() {
+    log.info("words read: " + getInserts());
+    log.info("bits set: " + getSetOperations());
+  }
+
+  public Number getSetOperations() {
+    return counter.get();
+  }
+
+  public int getInserts() {
+    return counter.get().intValue() / hashCount;
+  }
+
+  public boolean contains(String item) {
+    return calcHashes(item)
+        .allMatch(bits::get);
   }
 
   @SneakyThrows
@@ -57,7 +79,7 @@ public class BloomFilter {
 
     var hashes = TO_INTS_CONVERTER.apply(bytes);
 
-    return IntStream.of(hashes);
+    return IntStream.of(hashes).limit(hashCount);
   }
 
 }

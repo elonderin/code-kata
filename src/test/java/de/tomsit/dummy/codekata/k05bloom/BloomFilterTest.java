@@ -4,14 +4,25 @@ import static de.tomsit.dummy.codekata.k05bloom.BloomFilter.TO_INTS_CONVERTER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.glytching.junit.extension.random.Random;
+import io.github.glytching.junit.extension.random.RandomBeansExtension;
+import java.nio.file.Path;
+import java.util.List;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+@ExtendWith(RandomBeansExtension.class)
 class BloomFilterTest {
 
+  public static final Path FILE_PATH = Path.of("./data/kata05/wordlist.txt");
+  private static final Logger log = LoggerFactory.getLogger(BloomFilterTest.class);
   BloomFilter bloomFilter = new BloomFilter();
 
 
@@ -85,6 +96,21 @@ class BloomFilterTest {
     bytesStr = bytesStr.replace(" ", "");
     Assert.isTrue(bytesStr.length() % 2 == 0, "bytes has an uneven length:" + bytesStr.length());
     return bytesStr;
+  }
+
+  @Test
+  void testContains(@Random(type = String.class) List<String> entries) {
+    bloomFilter.insertItems(entries.stream());
+
+    var softly = new SoftAssertions();
+    entries.forEach(
+        e -> softly.assertThat(bloomFilter.contains(e))
+                   .as("value: " + e)
+                   .isTrue()
+    );
+
+    softly.assertAll();
+
   }
 
 
