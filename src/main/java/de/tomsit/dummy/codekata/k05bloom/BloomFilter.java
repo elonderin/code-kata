@@ -62,6 +62,7 @@ public class BloomFilter {
   void logInfo() {
     log.info("words read: " + getInserts());
     log.info("bits set: " + getSetOperations());
+    log.info("set bit quota: " + getSetQuota());
   }
 
   public Number getSetOperations() {
@@ -70,6 +71,16 @@ public class BloomFilter {
 
   public int getInserts() {
     return counter.get().intValue() / hashCount;
+  }
+
+  /* returns the quota of set bits vs. the size */
+  public double getSetQuota() {
+    var setCount = 0;
+    for (int i = 0; i < bits.length(); i++) {
+      setCount += bits.get(i) ? 1 : 0;
+    }
+
+    return 1.0 * setCount / bits.length();
   }
 
   @SneakyThrows
