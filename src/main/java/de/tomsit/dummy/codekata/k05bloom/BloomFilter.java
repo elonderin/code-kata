@@ -16,26 +16,26 @@ import org.springframework.util.Assert;
 public class BloomFilter {
 
   public static final Path FILE_PATH = Path.of("./data/kata04/wordlist.txt");
+  public static final int INDEX_BYTES = 3;
   public static final Function<byte[], int[]> TO_INTS_CONVERTER = BloomFilter::toInts;
 
   private static int[] toInts(byte[] bytes) {
-    Assert.isTrue(bytes.length >= 4, "given byte[] must be at least of size 4 but was: " + bytes.length);
+    Assert.isTrue(bytes.length >= INDEX_BYTES,
+                  "given byte[] must be at least of size %d but was: %d ".formatted(INDEX_BYTES, bytes.length));
 
-    var hashes = new int[bytes.length / 4];
-    if (hashes.length * 4 < bytes.length) {
-      log.warn("given byte[] size is not a multiple of 4 ({}). Higher bytes are ignored.", bytes.length);
+    var hashes = new int[bytes.length / INDEX_BYTES];
+    if (hashes.length * INDEX_BYTES < bytes.length) {
+      log.warn("given byte[] size is not a multiple of {} ({}). Bytes at the end are ignored.", INDEX_BYTES, bytes.length);
     }
-
     for (int i = 0; i < hashes.length; i++) {
-      hashes[i] |= (bytes[i + 0] & 0xFF) << 24;
-      hashes[i] |= (bytes[i + 1] & 0xFF) << 16;
-      hashes[i] |= (bytes[i + 2] & 0xFF) << 8;
-      hashes[i] |= (bytes[i + 3] & 0xFF);
+      for (int j = 0; j < INDEX_BYTES; j++) {
+        hashes[i] |= (bytes[i + j] & 0xFF) << (INDEX_BYTES - j - 1) * 8;
+      }
     }
     return hashes;
   }
 
-  private final BitSet bits = new BitSet(64 * 1024);
+  private final BitSet bits = new BitSet((1 << (INDEX_BYTES * 8)) - 1);
 
   private final String algorithm = "SHA-256";
 
