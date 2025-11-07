@@ -18,9 +18,6 @@ public class BloomFilter {
   public static final int INDEX_BYTES = 3;
   public static final Function<byte[], int[]> TO_INTS_CONVERTER = BloomFilter::toInts;
 
-  private MutableInt counter = new MutableInt();
-  private int hashCount = 4;
-
   private static int[] toInts(byte[] bytes) {
     Assert.isTrue(bytes.length >= INDEX_BYTES,
                   "given byte[] must be at least of size %d but was: %d ".formatted(INDEX_BYTES, bytes.length));
@@ -37,21 +34,29 @@ public class BloomFilter {
     return hashes;
   }
 
-  private final BitSet bits = new BitSet((1 << (INDEX_BYTES * 8)) - 1);
+  // -- static end
 
+  private int hashCount = 4;
   private final String algorithm = "SHA-256";
 
+  private final BitSet bits = new BitSet((1 << (INDEX_BYTES * 8)) - 1);
+  private MutableInt counter = new MutableInt();
+
   @SneakyThrows
-  public void insertItems(Stream<String> linesGiven) {
+  public void insert(Stream<String> value) {
     counter.setValue(0);
 
-    linesGiven
+    value
         .flatMapToInt(this::calcHashes)
         .peek(x -> counter.increment())
         .forEach(bits::set);
 
-    linesGiven.close();
+    value.close();
+  }
 
+  public boolean contains(String item) {
+    return calcHashes(item)
+        .allMatch(bits::get);
   }
 
   void logInfo() {
@@ -65,11 +70,6 @@ public class BloomFilter {
 
   public int getInserts() {
     return counter.get().intValue() / hashCount;
-  }
-
-  public boolean contains(String item) {
-    return calcHashes(item)
-        .allMatch(bits::get);
   }
 
   @SneakyThrows
