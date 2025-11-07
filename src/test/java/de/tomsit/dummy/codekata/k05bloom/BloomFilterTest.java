@@ -44,21 +44,17 @@ class BloomFilterTest {
           .contains(parseAsInts(bytesStr));
     }
 
-    @Test
-    void severalInts() {
-      assertThat(TO_INTS_CONVERTER.apply(new byte[]{
-          0x00, 0x00, 0x00, 0x01,
-          0x00, 0x00, 0x01, 0x00,
-          0x00, 0x01, 0x00, 0x00,
-          0x01, 0x00, 0x00, 0x00,
-          0x04, 0x03, 0x02, 0x01
-      }))
-          .contains(
-              0x0_0000_0001,
-              0x0_0000_0100,
-              0x0_0001_0000,
-              0x0_0100_0000,
-              0x0_0403_0201);
+    @ParameterizedTest
+    @CsvSource(textBlock = """
+        # hex bytes, 2 words
+        00 0001 00 0A00
+        ff ffff ff ffff
+        """, delimiter = '|')
+    void multiWord_Conversions(String bytesStr) {
+      var bytes = parseAsBytes(bytesStr);
+
+      assertThat(TO_INTS_CONVERTER.apply(bytes))
+          .contains(parseAsInts(bytesStr));
     }
   }
 
@@ -74,12 +70,13 @@ class BloomFilterTest {
   }
 
   private int[] parseAsInts(String hexStr) {
-    var HEX_WORD_LENGTH = 6;
+    var HEX_WORD_LENGTH = BloomFilter.INDEX_BYTES * 2;
     hexStr = cleanse(hexStr);
 
     var ints = new int[hexStr.length() / HEX_WORD_LENGTH];
     for (int i = 0; i < ints.length; i++) {
-      ints[i] = (int) Long.parseLong(hexStr.substring(i * HEX_WORD_LENGTH, (i + 1) * HEX_WORD_LENGTH), 16);
+      var substring = hexStr.substring(i * HEX_WORD_LENGTH, (i + 1) * HEX_WORD_LENGTH);
+      ints[i] = (int) Long.parseLong(substring, 16);
     }
     return ints;
   }

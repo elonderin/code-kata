@@ -29,7 +29,7 @@ public class BloomFilter {
     }
     for (int i = 0; i < hashes.length; i++) {
       for (int j = 0; j < INDEX_BYTES; j++) {
-        hashes[i] |= (bytes[i + j] & 0xFF) << (INDEX_BYTES - j - 1) * 8;
+        hashes[i] |= (bytes[i * INDEX_BYTES + j] & 0xFF) << (INDEX_BYTES - j - 1) * 8;
       }
     }
     return hashes;
