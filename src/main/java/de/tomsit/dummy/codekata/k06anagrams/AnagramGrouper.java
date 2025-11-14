@@ -37,5 +37,7 @@ public class AnagramGrouper {
     return new String(charArray);
   }
 
-
+  public int size() {
+    return anagramMap.size();
+  }
 }
