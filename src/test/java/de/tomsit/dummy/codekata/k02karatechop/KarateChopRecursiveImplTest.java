@@ -1,4 +1,4 @@
-package de.tomsit.dummy.codekata.karatechop;
+package de.tomsit.dummy.codekata.k02karatechop;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;

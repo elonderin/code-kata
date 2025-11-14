@@ -1,4 +1,4 @@
-package de.tomsit.dummy.codekata.karatechop;
+package de.tomsit.dummy.codekata.k02karatechop;
 
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 

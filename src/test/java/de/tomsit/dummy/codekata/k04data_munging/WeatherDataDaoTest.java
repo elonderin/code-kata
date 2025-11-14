@@ -1,4 +1,4 @@
-package de.tomsit.dummy.codekata.kata04;
+package de.tomsit.dummy.codekata.k04data_munging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

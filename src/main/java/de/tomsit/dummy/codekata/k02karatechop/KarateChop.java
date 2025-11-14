@@ -1,4 +1,4 @@
-package de.tomsit.dummy.codekata.karatechop;
+package de.tomsit.dummy.codekata.k02karatechop;
 
 import java.util.List;
 
